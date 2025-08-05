@@ -2,57 +2,309 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Invoice Generator</title>
-  <!-- Use a different CDN for html2pdf.js -->
-  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+  <title>Invoice with Tax Header and 2 Columns</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
+      margin: 0;
+      background: #eee;
+      padding: 20px;
       font-family: Arial, sans-serif;
-      margin: 40px;
     }
+
+    .pdf-wrapper {
+      width: 210mm;
+      min-height: 297mm;
+      background: white;
+      padding: 0;
+      margin: 0 auto;
+    }
+
     .invoice-box {
-      max-width: 800px;
-      padding: 30px;
-      border: 1px solid #eee;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-    }
-    input {
-      border: none;
-      border-bottom: 1px solid #000;
       width: 100%;
+      height: 100%;
+      border: 2px solid black;
+      padding: 30px;
+      background: #fff;
     }
+
+    .invoice-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid #000;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+
+    .company-info {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .company-text {
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .invoice-header img {
+      max-width: 100px;
+    }
+
+    .tax-invoice-wrapper {
+      border: 1.5px solid black;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    .tax-header {
+      text-align: center;
+      font-size: 18px;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    .tax-columns {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .tax-col {
+      flex: 1;
+    }
+
+    .tax-col p {
+      font-size: 14px;
+      margin: 6px 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      background: white;
+    }
+
+    table td, table th {
+      border: 1.5px solid black;
+      padding: 10px;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    input {
+      width: 100%;
+      border: none;
+      font-size: 16px;
+      background: transparent;
+      padding: 5px;
+    }
+
+    input[readonly] {
+      background: #f0f0f0;
+    }
+
     .btn {
-      margin-top: 20px;
-      padding: 10px 20px;
+      display: block;
+      margin: 10px auto;
+      padding: 12px 25px;
       background: #4CAF50;
       color: white;
       border: none;
       cursor: pointer;
+      font-size: 16px;
+      border-radius: 4px;
     }
+
     .btn:hover {
       background: #45a049;
+    }
+
+    .btn-sm {
+      font-size: 14px;
+      padding: 8px 16px;
+      background: #2196F3;
+    }
+
+    .btn-sm:hover {
+      background: #0b7dda;
     }
   </style>
 </head>
 <body>
 
-  <div class="invoice-box" id="invoice">
-    <h2>Invoice</h2>
-    <p><strong>Invoice #: </strong><input type="text" value="001" /></p>
-    <p><strong>Date: </strong><input type="date" /></p>
-    <p><strong>Bill To: </strong><input type="text" value="Client Name" /></p>
-    <p><strong>Amount: </strong><input type="text" value="$1000" /></p>
-    <p><strong>Description: </strong><input type="text" value="Website development" /></p>
+  <div class="pdf-wrapper" id="invoice">
+    <div class="invoice-box">
+      <!-- Header with logo and company info -->
+      <div class="invoice-header">
+        <div class="company-info">
+          <img src="https://via.placeholder.com/150x50?text=Logo" alt="Logo" />
+          <div class="company-text">
+            <strong>SJ FLOWERS</strong><br />
+            Pallipat, Tamil Nadu, 631207<br />
+            9159842232
+          </div>
+        </div>
+        <h2>INVOICE</h2>
+      </div>
+
+      <!-- Tax Invoice Section -->
+      <div class="tax-invoice-wrapper">
+        <h3 class="tax-header">TAX INVOICE</h3>
+        <div class="tax-columns">
+          <div class="tax-col">
+            <p><strong>Invoice Number:</strong> INV0008</p>
+            <p><strong>Date Of Supply:</strong> 01-07-2025</p>
+          </div>
+          <div class="tax-col">
+            <p><strong>Invoice Date:</strong> 01-08-2025</p>
+            <p><strong>Place of Supply:</strong> SATHYA</p>
+            <p><strong>State:</strong> Tamil Nadu</p>
+            <p><strong>Reverse Charge:</strong> NO</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Client Info -->
+      <table>
+        <tr>
+          <td>
+            <label>Invoice #</label>
+            <input type="text" value="INV-001" />
+          </td>
+          <td>
+            <label>Date</label>
+            <input type="date" />
+          </td>
+        </tr>
+        <tr>
+          <td colspan="2">
+            <label>Bill To</label>
+            <input type="text" value="Client Name" />
+          </td>
+        </tr>
+      </table>
+
+      <!-- Item Table -->
+      <h3>Items</h3>
+      <table id="items-table">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Unit Price</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="text" value="Web Design Service" /></td>
+            <td><input type="number" class="qty" value="2" /></td>
+            <td><input type="number" class="price" value="500" /></td>
+            <td><input type="text" class="line-total" readonly /></td>
+          </tr>
+          <tr>
+            <td><input type="text" value="Hosting" /></td>
+            <td><input type="number" class="qty" value="1" /></td>
+            <td><input type="number" class="price" value="200" /></td>
+            <td><input type="text" class="line-total" readonly /></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Add Item Button -->
+      <button class="btn-sm" type="button" onclick="addItem()">+ Add Item</button>
+
+      <!-- Grand Total -->
+      <table>
+        <tr>
+          <td colspan="3" style="text-align: right;"><strong>Grand Total:</strong></td>
+          <td><input type="text" id="grand-total" readonly /></td>
+        </tr>
+      </table>
+    </div>
   </div>
 
+  <!-- Download PDF Button -->
   <button class="btn" onclick="generatePDF()">Download PDF</button>
 
   <script>
+    function calculateTotals() {
+      const rows = document.querySelectorAll("#items-table tbody tr");
+      let grandTotal = 0;
+
+      rows.forEach(row => {
+        const qty = parseFloat(row.querySelector(".qty").value) || 0;
+        const price = parseFloat(row.querySelector(".price").value) || 0;
+        const total = qty * price;
+        row.querySelector(".line-total").value = total.toFixed(2);
+        grandTotal += total;
+      });
+
+      document.getElementById("grand-total").value = grandTotal.toFixed(2);
+    }
+
+    // Initial total
+    calculateTotals();
+
+    // Listen for changes
+    document.querySelectorAll(".qty, .price").forEach(input => {
+      input.addEventListener("input", calculateTotals);
+    });
+
+    // Add new item row
+    function addItem() {
+      const table = document.querySelector("#items-table tbody");
+      const newRow = document.createElement("tr");
+
+      newRow.innerHTML = `
+        <td><input type="text" value="" /></td>
+        <td><input type="number" class="qty" value="1" /></td>
+        <td><input type="number" class="price" value="0" /></td>
+        <td><input type="text" class="line-total" readonly /></td>
+      `;
+
+      table.appendChild(newRow);
+
+      newRow.querySelectorAll(".qty, .price").forEach(input => {
+        input.addEventListener("input", calculateTotals);
+      });
+
+      calculateTotals();
+    }
+
+    // Generate PDF
     function generatePDF() {
-      const invoice = document.getElementById("invoice");
-      // Using html2pdf.js to generate the PDF
-      html2pdf().from(invoice).save("invoice.pdf");
+      calculateTotals();
+
+      const element = document.getElementById("invoice");
+      const opt = {
+        margin: 0,
+        filename: 'invoice.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          scrollY: 0,
+          useCORS: true
+        },
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait'
+        }
+      };
+      html2pdf().set(opt).from(element).save();
     }
   </script>
 
