@@ -149,7 +149,7 @@
       <!-- Header with logo and company info -->
       <div class="invoice-header">
         <div class="company-info">
-          <img src="https://github.com/Mubarak213/www.webinvoice.blog/blob/cf3574553aeac52ed2b1b71d93c84f43385d9b69/logo.png" alt="Logo" />
+          <img src="https://via.placeholder.com/150x50?text=Logo" alt="Logo" />
           <div class="company-text">
             <strong>SJ FLOWERS</strong><br />
             Pallipat, Tamil Nadu, 631207<br />
@@ -168,7 +168,7 @@
             <p><strong>Date Of Supply:</strong> 01-07-2025</p>
           </div>
           <div class="tax-col">
-            <p><strong>Invoice Date:</strong> 01-08-2025</p>
+            <p><strong>Invoice Date:</strong> <input type="date" id="invoice-date" /></p>
             <p><strong>Place of Supply:</strong> SATHYA</p>
             <p><strong>State:</strong> Tamil Nadu</p>
             <p><strong>Reverse Charge:</strong> NO</p>
@@ -214,7 +214,12 @@
             <td><input type="number" class="price" value="500" /></td>
             <td><input type="text" class="line-total" readonly /></td>
           </tr>
-        
+          <tr>
+            <td><input type="text" value="Hosting" /></td>
+            <td><input type="number" class="qty" value="1" /></td>
+            <td><input type="number" class="price" value="200" /></td>
+            <td><input type="text" class="line-total" readonly /></td>
+          </tr>
         </tbody>
       </table>
 
@@ -235,6 +240,20 @@
   <button class="btn" onclick="generatePDF()">Download PDF</button>
 
   <script>
+    // Function to set current date in the invoice date field
+    window.onload = function() {
+      const today = new Date();
+      const dd = String(today.getDate()).padStart(2, '0'); // Day with leading zero
+      const mm = String(today.getMonth() + 1).padStart(2, '0'); // Month (zero-based, so add 1)
+      const yyyy = today.getFullYear(); // Full year
+
+      // Format date as yyyy-mm-dd
+      const currentDate = yyyy + '-' + mm + '-' + dd;
+
+      // Set the value of the invoice date input field
+      document.getElementById("invoice-date").value = currentDate;
+    };
+
     function calculateTotals() {
       const rows = document.querySelectorAll("#items-table tbody tr");
       let grandTotal = 0;
@@ -305,6 +324,3 @@
 
 </body>
 </html>
-
-
-
