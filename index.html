@@ -2,13 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Invoice with Tax Header and 2 Columns</title>
+  <title>Invoice with QR and Signature</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
       margin: 0;
       background: #eee;
@@ -20,15 +18,14 @@
       width: 210mm;
       min-height: 297mm;
       background: white;
-      padding: 0;
+      padding: 20mm;
       margin: 0 auto;
     }
 
     .invoice-box {
       width: 100%;
-      height: 100%;
       border: 2px solid black;
-      padding: 30px;
+      padding: 20px;
       background: #fff;
     }
 
@@ -43,9 +40,8 @@
 
     .company-info {
       display: flex;
-      flex-direction: row;
-      align-items: center;
       gap: 15px;
+      align-items: center;
     }
 
     .company-text {
@@ -76,10 +72,6 @@
       gap: 20px;
     }
 
-    .tax-col {
-      flex: 1;
-    }
-
     .tax-col p {
       font-size: 14px;
       margin: 6px 0;
@@ -89,7 +81,6 @@
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 20px;
-      background: white;
     }
 
     table td, table th {
@@ -140,189 +131,246 @@
     .btn-sm:hover {
       background: #0b7dda;
     }
+
+    .footer {
+      margin-top: 30px;
+      border-top: 2px solid #000;
+      padding-top: 15px;
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .bank-details {
+      font-size: 14px;
+      line-height: 1.5;
+      flex: 1 1 45%;
+    }
+
+    .signature {
+      text-align: right;
+      flex: 1 1 45%;
+    }
+
+    .signature .line {
+      margin-top: 40px;
+      border-top: 1px solid #000;
+      width: 200px;
+      float: right;
+    }
+
+    .qr-container {
+      text-align: left;
+      margin-top: 20px;
+    }
+
+    .amount-in-words {
+      font-weight: bold;
+      font-size: 15px;
+      margin-top: 10px;
+      margin-bottom: 20px;
+      border-bottom: 1.5px solid black;
+      padding-bottom: 10px;
+    }
   </style>
 </head>
 <body>
 
-  <div class="pdf-wrapper" id="invoice">
-    <div class="invoice-box">
-      <!-- Header with logo and company info -->
-      <div class="invoice-header">
-        <div class="company-info">
-          <img src="https://github.com/Mubarak213/www.webinvoice.blog/blob/main/logo.png?raw=true" alt="Logo" />
-          <div class="company-text">
-            <strong>SJ FLOWERS</strong><br />
-            Pallipat, Tamil Nadu, 631207<br />
-            9159842232
-          </div>
-        </div>
-        <h2>INVOICE</h2>
-      </div>
-
-      <!-- Tax Invoice Section -->
-      <div class="tax-invoice-wrapper">
-        <h3 class="tax-header">TAX INVOICE</h3>
-        <div class="tax-columns">
-          <div class="tax-col">
-            <p><strong>Invoice Number:</strong> INV0008</p>
-            <p><strong>Date Of Supply:</strong> 01-07-2025</p>
-          </div>
-          <div class="tax-col">
-            <p><strong>Invoice Date:</strong> <input type="date" id="invoice-date" /></p>
-            <p><strong>Place of Supply:</strong> SATHYA</p>
-            <p><strong>State:</strong> Tamil Nadu</p>
-            <p><strong>Reverse Charge:</strong> NO</p>
-          </div>
+<div class="pdf-wrapper" id="invoice">
+  <div class="invoice-box">
+    <div class="invoice-header">
+      <div class="company-info">
+        <img src="https://github.com/Mubarak213/www.webinvoice.blog/blob/main/logo.png?raw=true" alt="Logo" />
+        <div class="company-text">
+          <strong>SJ FLOWERS</strong><br />
+          Pallipat, Tamil Nadu, 631207<br />
+          9159842232
         </div>
       </div>
+      <h2>INVOICE</h2>
+    </div>
 
-      <!-- Client Info -->
-      <table>
+    <div class="tax-invoice-wrapper">
+      <h3 class="tax-header">TAX INVOICE</h3>
+      <div class="tax-columns">
+        <div class="tax-col">
+          <p><strong>Invoice Number:</strong> INV0008</p>
+          <p><strong>Date Of Supply:</strong> 01-07-2025</p>
+        </div>
+        <div class="tax-col">
+          <p><strong>Invoice Date:</strong> <input type="date" id="invoice-date" /></p>
+          <p><strong>Place of Supply:</strong> SATHYA</p>
+          <p><strong>State:</strong> Tamil Nadu</p>
+          <p><strong>Reverse Charge:</strong> NO</p>
+        </div>
+      </div>
+    </div>
+
+    <table>
+      <tr>
+        <td>
+          <label>Invoice #</label>
+          <input type="text" value="INV-001" />
+        </td>
+        <td>
+          <label>Date</label>
+          <input type="date" />
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2">
+          <label>Bill To</label>
+          <input type="text" value="Client Name" />
+        </td>
+      </tr>
+    </table>
+
+    <h3>Items</h3>
+    <table id="items-table">
+      <thead>
         <tr>
-          <td>
-            <label>Invoice #</label>
-            <input type="text" value="INV-001" />
-          </td>
-          <td>
-            <label>Date</label>
-            <input type="date" />
-          </td>
+          <th>Description</th>
+          <th>Quantity</th>
+          <th>Unit Price</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input type="text" value="Web Design Service" /></td>
+          <td><input type="number" class="qty" value="2" /></td>
+          <td><input type="number" class="price" value="500" /></td>
+          <td><input type="text" class="line-total" readonly /></td>
         </tr>
         <tr>
-          <td colspan="2">
-            <label>Bill To</label>
-            <input type="text" value="Client Name" />
-          </td>
+          <td><input type="text" value="Hosting" /></td>
+          <td><input type="number" class="qty" value="1" /></td>
+          <td><input type="number" class="price" value="200" /></td>
+          <td><input type="text" class="line-total" readonly /></td>
         </tr>
-      </table>
+      </tbody>
+    </table>
 
-      <!-- Item Table -->
-      <h3>Items</h3>
-      <table id="items-table">
-        <thead>
-          <tr>
-            <th>Description</th>
-            <th>Quantity</th>
-            <th>Unit Price</th>
-            <th>Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><input type="text" value="Web Design Service" /></td>
-            <td><input type="number" class="qty" value="2" /></td>
-            <td><input type="number" class="price" value="500" /></td>
-            <td><input type="text" class="line-total" readonly /></td>
-          </tr>
-          <tr>
-            <td><input type="text" value="Hosting" /></td>
-            <td><input type="number" class="qty" value="1" /></td>
-            <td><input type="number" class="price" value="200" /></td>
-            <td><input type="text" class="line-total" readonly /></td>
-          </tr>
-        </tbody>
-      </table>
+    <button class="btn-sm" type="button" onclick="addItem()">+ Add Item</button>
 
-      <!-- Add Item Button -->
-      <button class="btn-sm" type="button" onclick="addItem()">+ Add Item</button>
+    <table>
+      <tr>
+        <td colspan="3" style="text-align: right;"><strong>Grand Total:</strong></td>
+        <td><input type="text" id="grand-total" readonly /></td>
+      </tr>
+    </table>
 
-      <!-- Grand Total -->
-      <table>
-        <tr>
-          <td colspan="3" style="text-align: right;"><strong>Grand Total:</strong></td>
-          <td><input type="text" id="grand-total" readonly /></td>
-        </tr>
-      </table>
+    <div class="amount-in-words">
+      Total Invoice Amount in Words: <span id="amount-words">Zero Rupees Only /-</span>
+    </div>
+
+    <div class="footer">
+      <div class="bank-details">
+        <strong>Bank and Payment Details</strong><br /><br />
+        <strong>A/C Holder Name:</strong> S GOWSIA BHANU<br />
+        <strong>A/C Number:</strong> 557010100489<br />
+        <strong>IFSC Code:</strong> CNRB0005570<br />
+        <strong>Bank Name:</strong> Canara Bank<br />
+        <strong>Branch Name:</strong> PALLIPATU<br />
+        <div class="qr-container">
+          <div id="qrcode"></div>
+          <p><strong>Scan to Pay via UPI</strong></p>
+        </div>
+      </div>
+      <div class="signature">
+        <div class="line"></div>
+        Authorized Signature
+      </div>
     </div>
   </div>
+</div>
 
-  <!-- Download PDF Button -->
-  <button class="btn" onclick="generatePDF()">Download PDF</button>
+<button class="btn" onclick="generatePDF()">Download PDF</button>
 
-  <script>
-    // Function to set current date in the invoice date field
-    window.onload = function() {
-      const today = new Date();
-      const dd = String(today.getDate()).padStart(2, '0'); // Day with leading zero
-      const mm = String(today.getMonth() + 1).padStart(2, '0'); // Month (zero-based, so add 1)
-      const yyyy = today.getFullYear(); // Full year
+<script>
+  const UPI_ID = "BHARATPE90200171165@yesbankltd";
 
-      // Format date as yyyy-mm-dd
-      const currentDate = yyyy + '-' + mm + '-' + dd;
+  window.onload = function () {
+    const today = new Date();
+    document.getElementById("invoice-date").value = today.toISOString().split("T")[0];
+    calculateTotals();
+  };
 
-      // Set the value of the invoice date input field
-      document.getElementById("invoice-date").value = currentDate;
-    };
+  function numberToWords(num) {
+    const a = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
+      "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
+      "Seventeen", "Eighteen", "Nineteen"];
+    const b = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
 
-    function calculateTotals() {
-      const rows = document.querySelectorAll("#items-table tbody tr");
-      let grandTotal = 0;
-
-      rows.forEach(row => {
-        const qty = parseFloat(row.querySelector(".qty").value) || 0;
-        const price = parseFloat(row.querySelector(".price").value) || 0;
-        const total = qty * price;
-        row.querySelector(".line-total").value = total.toFixed(2);
-        grandTotal += total;
-      });
-
-      document.getElementById("grand-total").value = grandTotal.toFixed(2);
+    function convert(n) {
+      if (n < 20) return a[n];
+      if (n < 100) return b[Math.floor(n / 10)] + (n % 10 ? " " + a[n % 10] : "");
+      if (n < 1000) return a[Math.floor(n / 100)] + " Hundred" + (n % 100 ? " and " + convert(n % 100) : "");
+      if (n < 100000) return convert(Math.floor(n / 1000)) + " Thousand" + (n % 1000 ? " " + convert(n % 1000) : "");
+      if (n < 10000000) return convert(Math.floor(n / 100000)) + " Lakh" + (n % 100000 ? " " + convert(n % 100000) : "");
+      return convert(Math.floor(n / 10000000)) + " Crore" + (n % 10000000 ? " " + convert(n % 10000000) : "");
     }
 
-    // Initial total
-    calculateTotals();
+    return convert(num) + " Rupees Only /-";
+  }
 
-    // Listen for changes
-    document.querySelectorAll(".qty, .price").forEach(input => {
-      input.addEventListener("input", calculateTotals);
+  function calculateTotals() {
+    const rows = document.querySelectorAll("#items-table tbody tr");
+    let grandTotal = 0;
+
+    rows.forEach(row => {
+      const qty = parseFloat(row.querySelector(".qty").value) || 0;
+      const price = parseFloat(row.querySelector(".price").value) || 0;
+      const total = qty * price;
+      row.querySelector(".line-total").value = total.toFixed(2);
+      grandTotal += total;
     });
 
-    // Add new item row
-    function addItem() {
-      const table = document.querySelector("#items-table tbody");
-      const newRow = document.createElement("tr");
+    document.getElementById("grand-total").value = grandTotal.toFixed(2);
+    document.getElementById("amount-words").textContent = numberToWords(Math.round(grandTotal));
+    generateQRCode(grandTotal);
+  }
 
-      newRow.innerHTML = `
-        <td><input type="text" value="" /></td>
-        <td><input type="number" class="qty" value="1" /></td>
-        <td><input type="number" class="price" value="0" /></td>
-        <td><input type="text" class="line-total" readonly /></td>
-      `;
-
-      table.appendChild(newRow);
-
-      newRow.querySelectorAll(".qty, .price").forEach(input => {
-        input.addEventListener("input", calculateTotals);
-      });
-
+  document.addEventListener("input", (e) => {
+    if (e.target.classList.contains("qty") || e.target.classList.contains("price")) {
       calculateTotals();
     }
+  });
 
-    // Generate PDF
-    function generatePDF() {
-      calculateTotals();
+  function addItem() {
+    const tbody = document.querySelector("#items-table tbody");
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td><input type="text" /></td>
+      <td><input type="number" class="qty" value="1" /></td>
+      <td><input type="number" class="price" value="0" /></td>
+      <td><input type="text" class="line-total" readonly /></td>
+    `;
+    tbody.appendChild(row);
+  }
 
-      const element = document.getElementById("invoice");
-      const opt = {
-        margin: 0,
-        filename: 'invoice.pdf',
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          scrollY: 0,
-          useCORS: true
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: 'portrait'
-        }
-      };
-      html2pdf().set(opt).from(element).save();
-    }
-  </script>
+  function generateQRCode(amount) {
+    const upiURI = `upi://pay?pa=${encodeURIComponent(UPI_ID)}&am=${amount.toFixed(2)}&cu=INR`;
+    document.getElementById("qrcode").innerHTML = "";
+    new QRCode(document.getElementById("qrcode"), {
+      text: upiURI,
+      width: 128,
+      height: 128
+    });
+  }
+
+  function generatePDF() {
+    calculateTotals();
+    const element = document.getElementById("invoice");
+    html2pdf().set({
+      margin: 0,
+      filename: 'invoice.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, scrollY: 0, useCORS: true },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(element).save();
+  }
+</script>
 
 </body>
 </html>
-
-
